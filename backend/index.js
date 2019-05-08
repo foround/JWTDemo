@@ -14,6 +14,13 @@ function isValidUser(username,password){
     return username === 'zhengxu' && password === '123456'
 }
 
+app.all('*', function(req, res, next) {
+    res.header('Content-Type','application/json');
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "*");
+    next();
+})
+
 app.post('/login',function(req,res,next){
     let {username,password} = req.body;
     if(!isValidUser(username,password)){
@@ -25,17 +32,18 @@ app.post('/login',function(req,res,next){
 })
 app.post('/login',function(req,res,next){
     let expires = moment().add(defaultDuration).valueOf();
-    console.log(expires)
     let {username} = req.body;
     let token = jwt.encode({
         iss: username,
         exp: expires
     },app.get('jwtTokenSecret'))
-    res.setHeader('Content-Type','application/json');
     res.json({
-        token,
-        expires: expires,
-        user: 'zhengxu'
+        errcode: 2000,
+        data:{
+            token,
+            expires: expires,
+            user: 'zhengxu'
+        }
     })
 })
 
@@ -50,15 +58,14 @@ app.use(/\/(?!login$).*/,function(req,res,next){
     next()
 
 })
-app.get('/list',function(req,res){
+
+app.post('/list',function(req,res){
     let list = generateList()
-    res.setHeader('Content-Type','application/json');
     res.json({...list,timeStamp: moment().valueOf()})
 })
-app.use(function(err,req,res,next){
-    res.setHeader('Content-Type','application/json');
-    res.json({errMsg: err.message})
 
+app.use(function(err,req,res,next){
+    res.json({errcode: 2002,errMsg: err.message})
 })
 app.listen(3000,function(){
     console.log('server listen on 3000')
