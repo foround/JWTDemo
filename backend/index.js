@@ -63,7 +63,11 @@ app.use(/\/(?!login$).*/,function(req,res,next){
 
 app.post('/list',function(req,res){
     let list = generateList()
-    res.json({...list,timeStamp: moment().valueOf()})
+    res.json({
+        ...list,
+        timeStamp: moment().valueOf(),
+        errcode: 2000
+    })
 })
 
 app.use(function(err,req,res,next){

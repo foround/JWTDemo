@@ -32,7 +32,7 @@ axios.interceptors.request.use(config =>{
 
 axios.interceptors.response.use(response =>{
   response = response.status === 200? response.data: response;
-  if(response.errcode === 2002){
+  if(response.errcode !== 2000){
     alert(response.errMsg)
     setTimeout(() =>{
       router.replace('/')
