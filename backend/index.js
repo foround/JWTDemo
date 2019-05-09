@@ -14,6 +14,8 @@ function isValidUser(username,password){
     return username === 'zhengxu' && password === '123456'
 }
 
+const customError =require('./utils/customError')
+
 app.all('*', function(req, res, next) {
     res.header('Content-Type','application/json');
     res.header("Access-Control-Allow-Origin", "*");
@@ -24,7 +26,7 @@ app.all('*', function(req, res, next) {
 app.post('/login',function(req,res,next){
     let {username,password} = req.body;
     if(!isValidUser(username,password)){
-        next(new Error('Invilid username or password'))
+        next(new customError({errcode:2201,errmsg:'Invilid username or password'}))
     }else{
         next()
 
@@ -49,12 +51,12 @@ app.post('/login',function(req,res,next){
 
 app.use(/\/(?!login$).*/,function(req,res,next){
     let {token} = req.body;
-    if(!token) throw new Error('未携带token，非法登陆');
+    if(!token) throw new customError({errcode:2301,errmsg:'未携带token，非法登陆'});
 
     let decodedToken = jwt.decode(token,app.get("jwtTokenSecret"));
     let {iss,exp} = decodedToken;
-    if(iss != 'zhengxu') throw new Error('用户id非法');
-    if(moment().diff(exp) > 0) throw new Error('token已过期');
+    if(iss != 'zhengxu') throw new customError({errcode:2302,errmsg:'用户id非法'});
+    if(moment().diff(exp) > 0) throw new customError({errcode:2303,errmsg:'token已过期'});
     next()
 
 })
@@ -65,7 +67,7 @@ app.post('/list',function(req,res){
 })
 
 app.use(function(err,req,res,next){
-    res.json({errcode: 2002,errMsg: err.message})
+    res.json(err.info())
 })
 app.listen(3000,function(){
     console.log('server listen on 3000')
